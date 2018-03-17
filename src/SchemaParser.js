@@ -1,11 +1,11 @@
-'use strict'
 
-const _ = require('lodash')
-const pluralize = require('pluralize')
-const Utils = require('./Utils')
-const MigrationFormatter = require('./MigrationFormatter')
-const FactoryFormatter = require('./FactoryFormatter')
-const ModelFormatter = require('./ModelFormatter')
+
+const _ = require("lodash");
+const pluralize = require("pluralize");
+const Utils = require("./Utils");
+const MigrationFormatter = require("./MigrationFormatter");
+const FactoryFormatter = require("./FactoryFormatter");
+const ModelFormatter = require("./ModelFormatter");
 
 /**
  * Parse JSON schema
@@ -15,35 +15,35 @@ class SchemaParser {
    * @param  {Object} schema Parsed JSON schema
    */
   constructor (schema) {
-    this.schema = schema
-    this.tableIds = {}
-    this.columnIds = {}
+    this.schema = schema;
+    this.tableIds = {};
+    this.columnIds = {};
   }
 
   /**
    * get table name from an id
-   * @param  {[type]} id
-   * @return {[type]}
+   * @param  {number} id id of table
+   * @return {number} table name
    */
   _getTableName (id) {
-    return this.tableIds[id]
+    return this.tableIds[id];
   }
 
   /**
    * get table id from name
-   * @param  {String} name
-   * @return {String}
+   * @param  {String} name  name of table
+   * @return {String} if of table
    */
   _getTableId (name) {
-    let matchId
+    let matchId;
 
     Object.keys(this.tableIds).map(id => {
       if (this.tableIds[id] === name) {
-        matchId = id
+        matchId = id;
       }
-    })
+    });
 
-    return matchId
+    return matchId;
   }
 
   /**
@@ -52,7 +52,7 @@ class SchemaParser {
    * @return {String}
    */
   _getColumnTable (id) {
-    return this.columnIds[id].table
+    return this.columnIds[id].table;
   }
 
   /**
@@ -61,7 +61,7 @@ class SchemaParser {
    * @return {String}
    */
   _getColumnName (id) {
-    return this.columnIds[id].column
+    return this.columnIds[id].column;
   }
 
   /**
@@ -71,15 +71,15 @@ class SchemaParser {
    * @return {String}
    */
   _getColumnId (columnName, tableName) {
-    let matchId
+    let matchId;
 
-    Utils.objectToArray(this.columnIds, 'id').map(column => {
+    Utils.objectToArray(this.columnIds, "id").map(column => {
       if (column.name === columnName && column.table === tableName) {
-        matchId = column.id
+        matchId = column.id;
       }
-    })
+    });
 
-    return matchId
+    return matchId;
   }
 
   /**
@@ -87,15 +87,15 @@ class SchemaParser {
    * @return {Object}
    */
   convert () {
-    const tables = this._formatTables(this.schema.tables, this.schema.columns)
+    const tables = this._formatTables(this.schema.tables, this.schema.columns);
 
-    this._decorateRelations(tables, this.schema.relations)
+    this._decorateRelations(tables, this.schema.relations);
 
-    const migrations = new MigrationFormatter().format(tables)
-    const factories = new FactoryFormatter().format(tables)
-    const models = new ModelFormatter().format(tables)
-    const seeds = this._generateSeeds(tables)
-    const tests = this._generateTests(tables)
+    const migrations = new MigrationFormatter().format(tables);
+    const factories = new FactoryFormatter().format(tables);
+    const models = new ModelFormatter().format(tables);
+    const seeds = this._generateSeeds(tables);
+    const tests = this._generateTests(tables);
 
     return {
       tables,
@@ -104,7 +104,7 @@ class SchemaParser {
       models,
       seeds,
       tests
-    }
+    };
   }
 
   /**
@@ -114,10 +114,10 @@ class SchemaParser {
    * @return {Object}
    */
   _formatTables (rawTables, rawColumns) {
-    const tables = this._setupTables(rawTables)
-    this._mergeColumns(rawColumns, tables)
+    const tables = this._setupTables(rawTables);
+    this._mergeColumns(rawColumns, tables);
 
-    return tables
+    return tables;
   }
 
   /**
@@ -126,20 +126,20 @@ class SchemaParser {
    * @return {Object}
    */
   _setupTables (rawTables) {
-    const tables = {}
+    const tables = {};
     rawTables.forEach(table => {
       tables[table.name] = {
         softDelete: table.softDelete || false,
         timestamp: table.timeStamp || false,
-        isLink: table.name.includes('_'),
+        isLink: table.name.includes("_"),
         modelName: pluralize.singular(_.upperFirst(_.camelCase(table.name))),
         relations: {},
         isUpdate: table.isUpdate || false
-      }
-      this.tableIds[table.id] = table.name
-    })
+      };
+      this.tableIds[table.id] = table.name;
+    });
 
-    return tables
+    return tables;
   }
 
   /**
@@ -149,16 +149,16 @@ class SchemaParser {
    */
   _mergeColumns (rawColumns, tables) {
     Object.keys(tables).map(tableName => {
-      const table = tables[tableName]
-      const columnsObject = {}
+      const table = tables[tableName];
+      const columnsObject = {};
 
       rawColumns[this._getTableId(tableName)].forEach(column => {
-        this.columnIds[column.id] = {table: tableName, column: column.name}
-        columnsObject[column.name] = this._formatColumn(column)
-      })
+        this.columnIds[column.id] = {table: tableName, column: column.name};
+        columnsObject[column.name] = this._formatColumn(column);
+      });
 
-      table.columns = columnsObject
-    })
+      table.columns = columnsObject;
+    });
   }
 
   /**
@@ -168,12 +168,12 @@ class SchemaParser {
    */
   _formatColumn (column) {
     if (!(column.foreignKey && column.foreignKey.references && column.foreignKey.references.id)) {
-      column.foreignKey = null
+      column.foreignKey = null;
     }
 
-    this._convertType(column)
+    this._convertType(column);
 
-    return column
+    return column;
   }
 
   /**
@@ -181,24 +181,24 @@ class SchemaParser {
    * @param  {Object} column column object from raw json schema
    */
   _convertType (column) {
-    if (['tinyInteger', 'smallInteger', 'mediumInteger'].includes(column.type)) {
-      column.type = 'integer'
+    if (["tinyInteger", "smallInteger", "mediumInteger"].includes(column.type)) {
+      column.type = "integer";
     }
 
-    if (column.length && ['text', 'char'].includes(column.type)) {
-      column.type = 'string'
+    if (column.length && ["text", "char"].includes(column.type)) {
+      column.type = "string";
     }
 
-    if (column.type === 'double') {
-      column.type = 'float'
+    if (column.type === "double") {
+      column.type = "float";
     }
 
-    if (column.type === 'char') {
-      column.type = 'text'
+    if (column.type === "char") {
+      column.type = "text";
     }
 
     if (column.autoInc) {
-      column.type = 'increments'
+      column.type = "increments";
     }
   }
 
@@ -209,24 +209,24 @@ class SchemaParser {
    */
   _decorateRelations (tables, relations) {
     relations.map(relation => {
-      this._getRelationData(tables, relation)
+      this._getRelationData(tables, relation);
 
       if (!relation.sourceTable.isLink) {
-        this._setBelongsTo(relation)
+        this._setBelongsTo(relation);
 
-        this._setHas(relation)
+        this._setHas(relation);
       } else {
         const relatedRelations = relations.filter(related => {
-          return related.source.tableId === relation.source.tableId && related.source.columnId !== relation.source.columnId
-        })
+          return related.source.tableId === relation.source.tableId && related.source.columnId !== relation.source.columnId;
+        });
 
         relatedRelations.map(related => {
-          this._setBelongsToMany(tables, relation, related)
-        })
+          this._setBelongsToMany(tables, relation, related);
+        });
       }
-    })
+    });
 
-    this._findHasManyThrough(tables)
+    this._findHasManyThrough(tables);
   }
 
   /**
@@ -235,15 +235,15 @@ class SchemaParser {
    * @param  {Object} relation  relation object from raw json schema
    */
   _getRelationData (tables, relation) {
-    relation.sourceTableName = this._getTableName(relation.source.tableId)
-    relation.sourceTable = tables[relation.sourceTableName]
-    relation.sourceColumnName = this._getColumnName(relation.source.columnId)
-    relation.sourceColumn = tables[relation.sourceTableName].columns[relation.sourceColumnName]
+    relation.sourceTableName = this._getTableName(relation.source.tableId);
+    relation.sourceTable = tables[relation.sourceTableName];
+    relation.sourceColumnName = this._getColumnName(relation.source.columnId);
+    relation.sourceColumn = tables[relation.sourceTableName].columns[relation.sourceColumnName];
 
-    relation.targetTableName = this._getTableName(relation.target.tableId)
-    relation.targetTable = tables[relation.targetTableName]
-    relation.targetColumnName = this._getColumnName(relation.target.columnId)
-    relation.targetColumn = tables[relation.targetTableName].columns[relation.targetColumnName]
+    relation.targetTableName = this._getTableName(relation.target.tableId);
+    relation.targetTable = tables[relation.targetTableName];
+    relation.targetColumnName = this._getColumnName(relation.target.columnId);
+    relation.targetColumn = tables[relation.targetTableName].columns[relation.targetColumnName];
   }
 
   /**
@@ -251,18 +251,18 @@ class SchemaParser {
    * @param {Object} relation formatted relation object
    */
   _setBelongsTo (relation) {
-    let relationName = pluralize.singular(_.lowerCase(relation.targetTableName))
+    let relationName = pluralize.singular(_.lowerCase(relation.targetTableName));
     if (relation.targetTableName === relation.sourceTableName) {
-      relationName = `parent${relation.targetTable.modelName}`
+      relationName = `parent${relation.targetTable.modelName}`;
     }
 
     relation.sourceTable.relations[relationName] = {
-      type: 'belongsTo',
+      type: "belongsTo",
       table: relation.targetTableName,
       relatedModel: relation.targetTable.modelName,
       primaryKey: relation.targetColumnName,
       foreignKey: relation.sourceColumnName
-    }
+    };
   }
 
   /**
@@ -270,16 +270,16 @@ class SchemaParser {
    * @param {Object} relation formatted relation object
    */
   _setHas (relation) {
-    let targetRelationName = _.lowerCase(relation.sourceTableName)
-    targetRelationName = relation.sourceColumn.unique ? pluralize.singular(targetRelationName) : pluralize.plural(targetRelationName)
+    let targetRelationName = _.lowerCase(relation.sourceTableName);
+    targetRelationName = relation.sourceColumn.unique ? pluralize.singular(targetRelationName) : pluralize.plural(targetRelationName);
 
     relation.targetTable.relations[targetRelationName] = {
-      type: relation.sourceColumn.unique ? 'hasOne' : 'hasMany',
+      type: relation.sourceColumn.unique ? "hasOne" : "hasMany",
       table: relation.sourceTableName,
       relatedModel: relation.sourceTable.modelName,
       primaryKey: relation.targetColumnName,
       foreignKey: relation.sourceColumnName
-    }
+    };
   }
 
   /**
@@ -289,13 +289,13 @@ class SchemaParser {
    * @param {Object} related    formatted relation object for corresponding relation
    */
   _setBelongsToMany (tables, relation, related) {
-    const relatedName = this._getTableName(related.target.tableId)
-    const relatedTable = tables[relatedName]
-    const relatedColumnName = this._getColumnName(related.target.columnId)
-    const relatedForeignColumnName = this._getColumnName(related.source.columnId)
+    const relatedName = this._getTableName(related.target.tableId);
+    const relatedTable = tables[relatedName];
+    const relatedColumnName = this._getColumnName(related.target.columnId);
+    const relatedForeignColumnName = this._getColumnName(related.source.columnId);
 
     relation.targetTable.relations[pluralize.plural(_.lowerCase(relatedName))] = {
-      type: 'belongsToMany',
+      type: "belongsToMany",
       table: relatedName,
       relatedModel: relatedTable.modelName,
       primaryKey: relation.targetColumnName,
@@ -304,7 +304,7 @@ class SchemaParser {
       relatedForeignKey: relatedForeignColumnName,
       pivotTable: relation.sourceTableName,
       withTimestamps: relation.sourceTable.timestamp
-    }
+    };
   }
 
   /**
@@ -312,19 +312,19 @@ class SchemaParser {
    * @param {Object} tables formatted tables object
    */
   _findHasManyThrough (tables) {
-    const chainable = ['belongsToMany', 'hasManyThrough', 'hasMany', 'hasOne']
+    const chainable = ["belongsToMany", "hasManyThrough", "hasMany", "hasOne"];
 
     // Traverse through to find chainable relations
     for (let i = 0; i < 1; i) {
-      i = 1
+      i = 1;
       Object.keys(tables).map(tableName => {
-        const table = tables[tableName]
+        const table = tables[tableName];
 
         Object.keys(table.relations).map(relationName => {
-          const relation = table.relations[relationName]
-          const relatedTable = tables[relation.table]
+          const relation = table.relations[relationName];
+          const relatedTable = tables[relation.table];
 
-          Utils.objectToArray(relatedTable.relations, 'name').map(nextRelation => {
+          Utils.objectToArray(relatedTable.relations, "name").map(nextRelation => {
             if (chainable.includes(relation.type) &&
               chainable.includes(nextRelation.type) &&
               !table.relations[nextRelation.name] &&
@@ -332,20 +332,20 @@ class SchemaParser {
               // If both relationships are chainable, and not already chained, set up hasManyThrough
 
               table.relations[nextRelation.name] = {
-                type: 'hasManyThrough',
+                type: "hasManyThrough",
                 table: nextRelation.table,
                 relatedModel: relatedTable.modelName,
                 relatedMethod: nextRelation.name,
                 primaryKey: relation.primaryKey,
                 foreignKey: relation.foreignKey
-              }
+              };
 
               // Keep the loop going again
-              i = 0
+              i = 0;
             }
-          })
-        })
-      })
+          });
+        });
+      });
     }
   }
 
@@ -355,8 +355,8 @@ class SchemaParser {
    * @return {Array}
    */
   _generateSeeds (tables) {
-    const seeds = []
-    return seeds
+    const seeds = [];
+    return seeds;
   }
 
   /**
@@ -365,9 +365,9 @@ class SchemaParser {
    * @return {Array}
    */
   _generateTests (tables) {
-    const tests = []
-    return tests
+    const tests = [];
+    return tests;
   }
 }
 
-module.exports = SchemaParser
+module.exports = SchemaParser;

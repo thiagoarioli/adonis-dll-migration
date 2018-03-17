@@ -1,116 +1,114 @@
-'use strict'
-
-const Utils = require('./Utils')
+const Utils = require("./Utils");
 
 class MigrationFormatter {
   /**
    * Format migrations array before sending to writer
    * @param  {Object} tables Tables schema
-   * @return {Array}
+   * @return {Array} return migrations
    */
   format (tables) {
-    const migrations = Utils.objectToArray(tables, 'name')
+    const migrations = Utils.objectToArray(tables, "name");
 
     migrations.map(migration => {
-      migration.columnsArray = Utils.objectToArray(migration.columns, 'name')
+      migration.columnsArray = Utils.objectToArray(migration.columns, "name");
 
       migration.columnsArray.map(column => {
-        column.knexString = this._columnKnex(column)
-      })
-    })
+        column.knexString = this._columnKnex(column);
+      });
+    });
 
-    return migrations
+    return migrations;
   }
 
   /**
    * Generate a knex schema definition string
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} return key string
    */
   _columnKnex (column) {
-    let string = 'table.'
+    let string = "table.";
 
-    string += this._knexType(column)
-    string += this._knexChain(column)
-    string += this._knexRelationships(column)
+    string += this._knexType(column);
+    string += this._knexChain(column);
+    string += this._knexRelationships(column);
 
-    return string
+    return string;
   }
 
   /**
    * Add chainable methods to the knex string
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} knex string
    */
   _knexChain (column) {
-    let chainString = ''
+    let chainString = "";
 
     if (column.defValue) {
-      chainString += `.defaultTo('${column.defValue}')`
+      chainString += `.defaultTo('${column.defValue}')`;
     }
 
     if (!column.nullable) {
-      chainString += `.notNullable()`
+      chainString += `.notNullable()`;
     }
 
     if (column.unique) {
-      chainString += `.unique()`
+      chainString += `.unique()`;
     }
 
     if (column.index) {
-      chainString += `.index()`
+      chainString += `.index()`;
     }
 
     if (column.unsigned) {
-      chainString += `.unsigned()`
+      chainString += `.unsigned()`;
     }
 
     if (column.comment) {
-      chainString += `.comment('${column.comment}')`
+      chainString += `.comment('${column.comment}')`;
     }
 
-    return chainString
+    return chainString;
   }
 
   /**
    * Start Knex string with field type method call
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} knext type string
    */
   _knexType (column) {
-    let typeString = ''
+    let typeString = "";
 
-    if (['text', 'string', 'integer', 'bigInteger', 'date', 'dateTime', 'timestamp', 'time', 'float', 'decimal', 'boolean', 'increments'].includes(column.type)) {
-      typeString += `${column.type}('${column.name}'`
+    if (["text", "string", "integer", "bigInteger", "date", "dateTime", "timestamp", "time", "float", "decimal", "boolean", "increments"].includes(column.type)) {
+      typeString += `${column.type}('${column.name}'`;
     }
 
-    if (column.type && column.type.includes('Text')) {
-      typeString += `text('${column.name}', '${column.type.replace('Text', '')}text'`
+    if (column.type && column.type.includes("Text")) {
+      typeString += `text('${column.name}', '${column.type.replace("Text", "")}text'`;
     }
 
     if (column.length) {
-      typeString += `, ${column.length}`
+      typeString += `, ${column.length}`;
     }
 
-    typeString += `)`
+    typeString += `)`;
 
-    return typeString
+    return typeString;
   }
 
   /**
    * Add foreign key to knex string
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} knex relations
    */
   _knexRelationships (column) {
-    let relationshipString = ''
+    let relationshipString = "";
 
     if (column.foreignKey) {
-      relationshipString = `.references('${column.foreignKey.references.name}').on('${column.foreignKey.on.name}').onDelete('set null')`
+      relationshipString = `.references('${column.foreignKey.references.name}').on('${column.foreignKey.on.name}').onDelete('set null')`;
     }
 
-    return relationshipString
+    return relationshipString;
   }
 }
 
-module.exports = MigrationFormatter
+module.exports = MigrationFormatter;

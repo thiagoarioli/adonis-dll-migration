@@ -1,27 +1,27 @@
-const Utils = require('./Utils');
+const Utils = require("./Utils");
 
 class FactoryFormatter {
   /**
    * Format factories array before sending to writer
    * @param  {Object} tables Tables schema
-   * @return {Array}
+   * @return {Array} array of factories
    */
-  static format(tables) {
-    let factories = Utils.objectToArray(tables, 'name');
+  format(tables) {
+    let factories = Utils.objectToArray(tables, "name");
 
     factories = factories.filter(factory => !factory.isLink);
 
-    factories = factories.map((factory) => {
+    factories = factories.map(factory => {
       const newFactory = factory;
-      newFactory.columnsArray = Utils.objectToArray(factory.columns, 'name');
+      newFactory.columnsArray = Utils.objectToArray(factory.columns, "name");
 
-      newFactory.columnsArray = newFactory.columnsArray.map((column) => {
+      newFactory.columnsArray = newFactory.columnsArray.map(column => {
         const newColumn = column;
         newColumn.fieldRule = FactoryFormatter.generateFieldRule(column);
         return newColumn;
       });
 
-      newFactory.columnsArray = Utils.removeLastComma(newFactory.columnsArray, 'fieldRule');
+      newFactory.columnsArray = Utils.removeLastComma(newFactory.columnsArray, "fieldRule");
 
       return newFactory;
     });
@@ -33,10 +33,10 @@ class FactoryFormatter {
    * Generate the field rule value for a column
    * to be printed in the factory
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} String Filed Rule
    */
   static generateFieldRule(column) {
-    if (column.type === 'increments' || column.foreignKey) {
+    if (column.type === "increments" || column.foreignKey) {
       return null;
     }
 
@@ -45,7 +45,7 @@ class FactoryFormatter {
     string += FactoryFormatter.fakerType(column);
     string += FactoryFormatter.stringLength(column);
 
-    string += ',';
+    string += ",";
 
     return string;
   }
@@ -53,49 +53,49 @@ class FactoryFormatter {
   /**
    * Start off the field rule string with the faker type call
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} String with right Type
    */
   static fakerType(column) {
-    let string = '';
+    let string = "";
 
     if (column.nullable) {
-      string += 'bool() ? null : faker.';
+      string += "bool() ? null : faker.";
     }
 
-    if (['timestamp'].includes(column.type)) {
+    if (["timestamp"].includes(column.type)) {
       string += `${column.type}()`;
     }
 
-    if (['text', 'string'].includes(column.type) || (column.type && column.type.includes('Text'))) {
-      string += 'sentence()';
+    if (["text", "string"].includes(column.type) || (column.type && column.type.includes("Text"))) {
+      string += "sentence()";
     }
 
-    if (['integer', 'bigInteger'].includes(column.type)) {
+    if (["integer", "bigInteger"].includes(column.type)) {
       if (column.unsigned) {
-        string += 'natural()';
+        string += "natural()";
       } else {
-        string += 'integer()';
+        string += "integer()";
       }
     }
 
-    if (['decimal', 'float'].includes(column.type)) {
-      string += 'floating({min: 0})';
+    if (["decimal", "float"].includes(column.type)) {
+      string += "floating({min: 0})";
     }
 
-    if (['date', 'dateTime'].includes(column.type)) {
-      string += 'date({string: true, american: false})';
+    if (["date", "dateTime"].includes(column.type)) {
+      string += "date({string: true, american: false})";
     }
 
-    if (column.type === 'dateTime') {
-      string += ' + " " + faker.';
+    if (column.type === "dateTime") {
+      string += " + \" \" + faker.";
     }
 
-    if (column.type === 'boolean') {
-      string += 'bool()';
+    if (column.type === "boolean") {
+      string += "bool()";
     }
 
-    if (['time', 'dateTime'].includes(column.type)) {
-      string += 'hour({twentyfour: true}) + "/" + faker.minute() + "/" + faker.second()';
+    if (["time", "dateTime"].includes(column.type)) {
+      string += "hour({twentyfour: true}) + \"/\" + faker.minute() + \"/\" + faker.second()";
     }
 
     return string;
@@ -104,12 +104,12 @@ class FactoryFormatter {
   /**
    * Cut the generated string if there is a length field
    * @param  {Object} column Column schema
-   * @return {String}
+   * @return {String} string lenght
    */
   static stringLength(column) {
-    let string = '';
+    let string = "";
 
-    if (column.length && ['text', 'string'].includes(column.type)) {
+    if (column.length && ["text", "string"].includes(column.type)) {
       string += `.substring(0, ${column.length})`;
     }
 

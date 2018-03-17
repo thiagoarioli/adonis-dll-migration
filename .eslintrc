@@ -1,7 +1,16 @@
 {
-    "extends": "airbnb",
+    "extends": "walmart",
     "rules": {
-        "array-callback-return": 0
+        "max-params": 0,
+        "max-statements": 0,
+        "complexity": 0,
+        "no-console": ["error",
+            {"allow":["error","warn", "info"]}
+        ]
+    },
+    "globals": {
+        "console": true,
+        "__dirname": true
     }
     
 }
